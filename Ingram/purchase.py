@@ -42,8 +42,9 @@ class purchase_order(osv.osv):
     _columns = {
                 'ingramsalesordernumber': fields.char("Order number",255,help="Order number at Ingram"),
                 'ingramsalesorderdate': fields.char("Date order",255,help="Date order at Ingram"),
-                'sendorder': fields.boolean('order sended',255),
-                'sendmanuel': fields.boolean('Send manually',255),
+                'sendorder': fields.boolean('order sended'),
+                'skipxml': fields.boolean('Skip XML Ingram request',Help='Confirm the purchase order without Ingram XML request'),
+                'sendmanuel': fields.boolean('Send manually'),
                 'generate_po': fields.char("Order Generated",255,help="Purchase order generated from the Ingram Module if the PO have other product than the Ingram product.", readonly=True),
     }
        
@@ -53,7 +54,7 @@ class purchase_order(osv.osv):
             config=self.pool.get('ingram_config').read(cr,uid,idsearch,['supplier_id'])
             id=config[0]['supplier_id']
         for i in ids:
-            if self.browse(cr,uid,i).partner_id.id == id[0]:
+            if self.browse(cr,uid,i).partner_id.id == id[0] and self.browse(cr,uid,i).skipxml==False:
                 if self.pool.get('ingram_config').browse(cr,uid,idsearch[0]).xml_active==1:
                     check=self.button_check(cr,uid,ids)
                     if check != True:
@@ -87,7 +88,7 @@ class purchase_order(osv.osv):
             idsearch=self.pool.get('ingram_config').search(cr,uid,[('xml_active','=','True'),])
             config=self.pool.get('ingram_config').read(cr,uid,idsearch,['supplier_id'])
             id=config[0]['supplier_id']
-            if po.partner_id.id == id[0] :
+            if po.partner_id.id == id[0] and po.skipxml==False:
                 result= self.send_order(cr,uid,ids,context)
                 for i in ids:
                     if result['warning']['message']=="Successful Order":
@@ -353,6 +354,8 @@ class purchase_order(osv.osv):
             statut=[]
             id_create=''
             total=""
+            if noeud.getElementsByTagName("IngramSalesOrderNumber") :
+                self.pool.get('purchase.order').write(cr,uid,ids,{'partner_ref':self.getText((noeud.getElementsByTagName("IngramSalesOrderNumber")[0]).childNodes)})
             for i in noeud.getElementsByTagName("OrderStatus"):
                 status.append(i.getAttribute("StatusCode"))
                 status.append(i.getAttribute("StatusDescription"))

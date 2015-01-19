@@ -9,6 +9,9 @@
                 <field name="company_id" position="after">
                     <field name="generate_po" colspan="4"/>
                 </field>
+                <field name="partner_ref" position="after">
+                    <field name="skipxml" />
+                </field>
                 <field colspan="4" name="order_line" nolabel="1" mode="tree,form" position="replace">
                     <field colspan="4" name="order_line" nolabel="1" mode="tree">
                         <tree string="Purchase Order Lines" colors="red:verif=='3';green:verif=='2';blue:verif=='1'">
